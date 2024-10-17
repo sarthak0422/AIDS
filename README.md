@@ -33,4 +33,4 @@ To run this program locally, follow these steps:
 
 Your folder structure should look something like this after downloading and moving the .csv files in the root directory.
 
-9. Lastly, execute `flask run --port 8000` and your program should be running at `http://127.0.0.1:8000/`
+9. Lastly, execute `flask run --port 5000` and your program should be running at `http://127.0.0.1:5000/`
