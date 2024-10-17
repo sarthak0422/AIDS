@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>MovieBot - Movie Recommender ChatBot</title>
+  <link rel="shortcut icon" type="image/x-icon" href="https://svgshare.com/i/KJd.svg" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}" />
+
+  <!-- Meta Tags for Open Graph and Twitter -->
+  <meta property="og:title" content="Moviebot">
+  <meta property="og:description" content="An NLP powered movie recommendation chatbot, written in Python, HTML/CSS, and JavaScript.">
+  <meta property="og:image" content="{{ url_for('static', filename='assets/thumbnail.png') }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@FNTey" />
+  <meta name="twitter:creator" content="@FNTey">
+  <meta name="twitter:title" content="Moviebot">
+  <meta name="twitter:description" content="An NLP powered movie recommendation chatbot, written in Python, HTML/CSS, and JavaScript.">
+  <meta name="twitter:image" content="https://nlp-moviebot.vercel.app/static/assets/thumbnail.png">
+
+  <!-- Fonts & jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Custom Styling -->
+  <style>
+    body {
+      font-family: 'Rubik', sans-serif;
+      background-color: #f1f5f9;
+      margin: 0;
+      padding: 0;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header Styles */
+    .title-header {
+      text-align: center;
+      padding: 20px;
+      background-color: #0284c7;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .title-header h1 {
+      font-size: 36px;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .title-header img {
+      margin-right: 10px;
+    }
+
+    .title-header p {
+      font-size: 18px;
+      margin-top: 10px;
+      color: #e0e0e0;
+    }
+
+    /* Decorative Line */
+    .box {
+      height: 5px;
+      background: linear-gradient(to right, #38bdf8, #0ea5e9);
+    }
+
+    /* Main Chatbox Styles */
+    .boxed {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-grow: 1;
+    }
+
+    #chatbox {
+      width: 80%;
+      max-width: 600px;
+      height: 60vh;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      overflow-y: auto;
+      position: relative;
+      scroll-behavior: smooth; /* Smooth scrolling */
+    }
+
+    /* Welcome Bubble for the Bot */
+    .welcome-bubble {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .bot-image {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .speech-bubble-bot {
+      background-color: #e2e8f0;
+      padding: 15px 20px;
+      border-radius: 20px;
+      position: relative;
+      max-width: 75%;
+      color: #333;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .speech-bubble-bot:after {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: -10px;
+      border-width: 10px;
+      border-style: solid;
+      border-color: transparent #e2e8f0 transparent transparent;
+    }
+
+    /* User Input Area */
+    #userInput {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    #textInput {
+      width: 85%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      outline: none;
+      font-size: 16px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    #textInput:focus {
+      border-color: #0ea5e9;
+    }
+
+    #userInputBtn {
+      padding: 10px 20px;
+      background-color: #0284c7;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #userInputBtn:hover {
+      background-color: #0369a1;
+    }
+
+    /* Auto-Complete Drop-Down */
+    .autocomplete-items {
+      position: absolute;
+      border: 1px solid #d4d4d4;
+      border-bottom: none;
+      border-top: none;
+      z-index: 99;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: white;
+    }
+
+    .autocomplete-items div {
+      padding: 10px;
+      cursor: pointer;
+      background-color: #fff;
+      border-bottom: 1px solid #d4d4d4;
+    }
+
+    .autocomplete-items div:hover {
+      background-color: #e9e9e9;
+    }
+
+    .autocomplete-active {
+      background-color: #0ea5e9 !important;
+      color: #ffffff;
+    }
+
+    /* Footer Styles */
+    footer {
+      background-color: #0284c7;
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    footer p {
+      margin: 0;
+      font-size: 14px;
+      color: #e0e0e0;
+    }
+
+    /* Responsiveness */
+    @media (max-width: 768px) {
+      #chatbox {
+        width: 95%;
+      }
+
+      #textInput {
+        width: 75%;
+      }
+
+      .speech-bubble-bot {
+        max-width: 100%;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header Section -->
+  <div class="title-header">
+    <h1>
+      <img src="https://svgshare.com/i/KJd.svg" alt="Moviebot" style="width:40px;height:40px;" />
+      MovieBot
+    </h1>
+    <p>Your Personalized Movie Recommender Chatbot</p>
+  </div>
+
+  <!-- Decorative Gradient Line -->
+  <div class="box"></div>
+
+  <!-- Main Chat Box Area -->
+  <div class="boxed">
+    <div>
+      <div id="chatbox">
+        <div class="welcome-bubble">
+          <img class="bot-image" src="https://svgshare.com/i/KJd.svg" alt="Moviebot" />
+          <div class="speech-bubble-bot botText">
+            <div>
+              Hi! I'm MovieBot! What movie genre(s) are you interested in?
+              <br>
+              <i style="font-size: 16px; color: rgb(17, 39, 100)">(If multiple, separate with commas)</i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Input Section -->
+      <div id="userInput">
+        <input id="textInput" type="text" name="msg" placeholder='Type "skip" to skip this question' autocomplete="off" />
+        <div class="autocomplete-items" id="autocomplete-list"></div> <!-- Drop-down for Auto-complete -->
+        <button id="userInputBtn" onclick="handleSendBtn()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Space -->
+  <footer>
+    <p>MovieBot &copy; 2024 | Built with ❤️ for movie lovers</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='javascript/script.js') }}"></script>
+  <script>
+    // Sample genres for auto-completion
+    const genres = ["Action", "Comedy", "Drama", "Horror", "Romance", "Thriller", "Sci-Fi", "Fantasy", "Animation", "Documentary", "Adventure"];
+    const actors = ["Leonardo DiCaprio", "Scarlett Johansson", "Brad Pitt", "Meryl Streep", "Denzel Washington", "Jennifer Lawrence", "Tom Hanks"];
+    const directors = ["Steven Spielberg", "Christopher Nolan", "Martin Scorsese", "Quentin Tarantino", "Alfred Hitchcock", "James Cameron"];
+
+    // Auto-complete function
+    function autocomplete(input, genreArray) {
+      let currentFocus;
+      input.addEventListener("input", function () {
+        let listDiv, itemDiv, val = this.value;
+        closeAllLists();
+        if (!val) return false;
+        currentFocus = -1;
+        listDiv = document.createElement("div");
+        listDiv.setAttribute("id", this.id + "-autocomplete-list");
+        listDiv.setAttribute("class", "autocomplete-items");
+        this.parentNode.appendChild(listDiv);
+
+        genreArray.forEach(function (genre) {
+          if (genre.substr(0, val.length).toUpperCase() === val.toUpperCase()) {
+            itemDiv = document.createElement("div");
+            itemDiv.innerHTML = "<strong>" + genre.substr(0, val.length) + "</strong>";
+            itemDiv.innerHTML += genre.substr(val.length);
+            itemDiv.addEventListener("click", function () {
+              input.value = genre;
+              closeAllLists();
+            });
+            listDiv.appendChild(itemDiv);
+          }
+        });
+      });
+
+      function closeAllLists(el) {
+        const items = document.getElementsByClassName("autocomplete-items");
+        for (let i = 0; i < items.length; i++) {
+          if (el !== items[i] && el !== input) {
+            items[i].parentNode.removeChild(items[i]);
+          }
+        }
+      }
+
+      document.addEventListener("click", function (e) {
+        closeAllLists(e.target);
+      });
+    }
+
+    // Initialize auto-complete for the text input
+    autocomplete(document.getElementById("textInput"), genres);
+  </script>
+</body>
+
+</html>
